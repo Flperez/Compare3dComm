@@ -1,47 +1,50 @@
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtCore import QTimer
-import numpy as np
 from operator import attrgetter
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 
-class MyMplCanvas(FigureCanvas):
-    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
 
-    def __init__(self, option,parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        FigureCanvas.__init__(self, fig)
-        self.axes = fig.add_subplot(111)
+class MyDynamicMplCanvas(FigureCanvas):
+    """A canvas that updates itself every second with a new plot."""
+
+    def __init__(self, option,pose_error,pose_est,pose_real,map,parent=None, width=6, height=4, dpi=100):
+
+        #MyMplCanvas
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
-        FigureCanvas.setSizePolicy(self,QSizePolicy.Expanding,QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
 
-class MyDynamicMplCanvas(MyMplCanvas):
-    """A canvas that updates itself every second with a new plot."""
-
-    def __init__(self, option,poseEst,poseReal,map,parent=None, width=5, height=4, dpi=100):
-        MyMplCanvas.__init__(self, option,parent, width, height, dpi)
         self.map = map
-        self.poseEst = poseEst
-        self.poseReal = poseReal
+        self.poseEst = pose_est
+        self.poseReal = pose_real
+        self.option = option
+        self.pose_error = pose_error
+        self.it = 0
 
-
+        # Timer
         timer = QTimer(self)
         timer.timeout.connect(self.update_figure)
-        timer.start(100)
-        self.option = option
+        self.dt = 100
+        timer.start(self.dt)
+
 
 
 
     def update_figure(self):
 
 
-        self.axes.cla()
         if self.option == "showXYZ":
+            self.fig.clf()
+            self.axes = self.fig.add_subplot(111)
+            self.axes.cla()
 
             xEst = list(map(attrgetter('x'), self.poseEst))
             yEst = list(map(attrgetter('y'), self.poseEst))
@@ -55,50 +58,71 @@ class MyDynamicMplCanvas(MyMplCanvas):
             self.axes.plot(xEst, yEst, 'r', xReal, yReal, 'b',xmap,ymap,'*k')
             self.draw()
 
+
+        if self.option == "showRPY":
+            ### Angle RPY
+            #self.axes.cla()
+            self.fig.clf()
+            self.axes = self.fig.add_subplot(311)
+            PosRealR = list(map(attrgetter('roll'), self.poseReal))
+            PosEstR = list(map(attrgetter('roll'), self.poseEst))
+            t = np.linspace(0,len(PosEstR),len(PosEstR))
+            self.axes.plot(t, PosRealR,'b', t, PosEstR,'r')
+
+            self.axes = self.fig.add_subplot(312)
+            PosRealY = list(map(attrgetter('yaw'), self.poseReal))
+            PosEstY = list(map(attrgetter('yaw'), self.poseEst))
+            self.axes.plot(t, PosRealY,'b', t, PosEstY,'r')
+
+            self.axes = self.fig.add_subplot(313)
+            PosRealP = list(map(attrgetter('pitch'), self.poseReal))
+            PosEstP = list(map(attrgetter('pitch'), self.poseEst))
+            self.axes.plot(t, PosRealP,'b', t, PosEstP,'r')
+
+            self.draw()
+        if self.option == "showErrorRPY":
+            ### Angle RPY
+            # self.axes.cla()
+            self.fig.clf()
+            self.axes = self.fig.add_subplot(311)
+            ErrorR = list(map(attrgetter('roll'), self.pose_error))
+            t = np.linspace(0, len(ErrorR), len(ErrorR))
+            self.axes.plot(t, ErrorR)
+
+            self.axes = self.fig.add_subplot(312)
+            ErrorY = list(map(attrgetter('yaw'), self.pose_error))
+            self.axes.plot(t, ErrorY)
+
+            self.axes = self.fig.add_subplot(313)
+            ErrorP = list(map(attrgetter('pitch'), self.pose_error))
+
+            self.axes.plot(t, ErrorP)
+            self.draw()
+
+
+        if self.option == "showErrorXYZ":
+            ### Angle RPY
+            # self.axes.cla()
+            self.fig.clf()
+            self.axes = self.fig.add_subplot(311)
+            ErrorX = list(map(attrgetter('x'), self.pose_error))
+            t = np.linspace(0, len(ErrorX), len(ErrorX))
+            self.axes.plot(t, ErrorX)
+
+            self.axes = self.fig.add_subplot(312)
+            Errory = list(map(attrgetter('y'), self.pose_error))
+            self.axes.plot(t, Errory)
+
+            self.axes = self.fig.add_subplot(313)
+            ErrorZ = list(map(attrgetter('z'), self.pose_error))
+
+            self.axes.plot(t, ErrorZ)
+            self.draw()
+
+
+
+
+
     def setOption(self,option):
         self.option=option
 
-
-
-
-class MyplotXYZ(MyMplCanvas):
-    """A canvas that updates itself every second with a new plot."""
-
-    def __init__(self, xmap,ymap,xsim,ysim,xreal,yreal,parent=None, width=5, height=4, dpi=100):
-        MyMplCanvas.__init__(self,parent=parent, width=width, height=height, dpi=dpi,option="showXYZ")
-        self.xmap = xmap
-        self.ymap = ymap
-        self.xsim = xsim
-        self.ysim = ysim
-        self.xreal = xreal
-        self.yreal = yreal
-        timer = QTimer(self)
-        timer.timeout.connect(self.update)
-        timer.start(250)
-
-    def update(self):
-        self.axes.plot(self.xmap, self.ymap, '*k', self.xsim, self.ysim, 'r', self.xreal, self.yreal, 'b')
-        self.draw()
-
-
-class MyplotRPY(MyMplCanvas):
-    """A canvas that updates itself every second with a new plot."""
-
-    def __init__(self, Rreal, Yreal, Preal, Rsim, Ysim, Psim, parent=None, width=5, height=4, dpi=100):
-        MyMplCanvas.__init__(self, parent=parent, width=width, height=height, dpi=dpi, option="showRPY")
-        timer = QTimer(self)
-        timer.timeout.connect(self.update)
-        timer.start(250)
-        self.Rreal = Rreal
-        self.Yreal = Yreal
-        self.Preal = Preal
-        self.Rsim = Rsim
-        self.Ysim = Ysim
-        self.Psim = Psim
-
-    def update(self):
-        t = np.linspace(0,len(self.Rreal),len(self.Rreal))
-        self.axes[0].plot(t,self.Rreal,t,self.Rsim)
-        self.axes[1].plot(t, self.Yreal, t, self.Ysim)
-        self.axes[2].plot(t, self.Preal, t, self.Psim)
-        self.draw()

@@ -6,7 +6,8 @@ import sys,os
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import threading
-from widgetplot import MyplotXYZ,MyplotRPY,MyDynamicMplCanvas
+from widgetplot import MyDynamicMplCanvas
+from jderobotTypes.pose3d import Pose3d
 
 
 
@@ -16,22 +17,22 @@ class MainWindow(QWidget):
 
         super(MainWindow, self).__init__()
         self.updGUI.connect(self.updateGUI)
-
-        self.pose3dsim_list = []
-        self.pose3dreal_list = []
-
-
-        self.initUI(map=map)
-        self.myplot()
-
-
-    def initUI(self,map):
         ### initialize
         self.filename = map
 
-
-
         self.loadpathXYZ()
+
+        self.pose3dsim_list = []
+        self.pose3dreal_list = []
+        self.pose3dError_list = []
+
+
+        self.initUI()
+        self.myplot()
+
+
+    def initUI(self):
+
 
 
         ### Text out
@@ -59,13 +60,18 @@ class MainWindow(QWidget):
         self.cbRPY.stateChanged.connect(self.showRPY)
 
         ## Error
-        self.cbError = QCheckBox('Show Error', self)
-        self.cbError.move(640+40, 300)
-        self.cbError.toggle()
-        self.cbError.setChecked(False)
-        self.cbError.stateChanged.connect(self.showError)
+        self.cbErrorXYZ = QCheckBox('Show ErrorXYZ', self)
+        self.cbErrorXYZ.move(640+40, 300)
+        self.cbErrorXYZ.toggle()
+        self.cbErrorXYZ.setChecked(False)
+        self.cbErrorXYZ.stateChanged.connect(self.showErrorXYZ)
 
-
+        ## Error
+        self.cbErrorRPY = QCheckBox('Show ErrorRPY', self)
+        self.cbErrorRPY.move(640 + 40, 400)
+        self.cbErrorRPY.toggle()
+        self.cbErrorRPY.setChecked(False)
+        self.cbErrorRPY.stateChanged.connect(self.showErrorRPY)
 
         ### Saving results
         ButtonSave = QPushButton('Save results', self)
@@ -85,7 +91,9 @@ class MainWindow(QWidget):
         l = QVBoxLayout(self.main_widget)
         self.dc = MyDynamicMplCanvas(parent=self.main_widget, option=self.showNow,
                                      map=self.map,
-                                     poseEst=self.pose3dsim_list,poseReal=self.pose3dreal_list)
+                                     pose_est=self.pose3dsim_list,
+                                     pose_real=self.pose3dreal_list,
+                                     pose_error = self.pose3dError_list)
         l.addWidget(self.dc)
 
     def showXYZ(self,state):
@@ -95,27 +103,40 @@ class MainWindow(QWidget):
             self.dc.setOption(self.showNow)
 
             self.cbRPY.setChecked(False)
-            self.cbError.setChecked(False)
+            self.cbErrorXYZ.setChecked(False)
+            self.cbErrorRPY.setChecked(False)
 
     def showRPY(self, state):
         if state == Qt.Checked:
             self.textbox.setText("You have selected show RPY graph")
             self.showNow = "showRPY"
             self.cbxyz.setChecked(False)
-            self.cbError.setChecked(False)
+            self.cbErrorRPY.setChecked(False)
+            self.cbErrorXYZ.setChecked(False)
             self.dc.setOption(self.showNow)
 
 
 
             
 
-    def showError(self, state):
+    def showErrorXYZ(self, state):
         if state == Qt.Checked:
-            self.textbox.setText("You have selected show error graph")
-            self.showNow = "showError"
+            self.textbox.setText("You have selected show error XYZ graph")
+            self.showNow = "showErrorXYZ"
             self.dc.setOption(self.showNow)
             self.cbxyz.setChecked(False)
             self.cbRPY.setChecked(False)
+            self.cbErrorRPY.setChecked(False)
+
+    def showErrorRPY(self, state):
+        if state == Qt.Checked:
+            self.textbox.setText("You have selected show error RPY graph")
+            self.showNow = "showErrorRPY"
+            self.dc.setOption(self.showNow)
+            self.cbxyz.setChecked(False)
+            self.cbRPY.setChecked(False)
+            self.cbErrorXYZ.setChecked(False)
+
 
             
     def savingResult(self):
@@ -137,7 +158,21 @@ class MainWindow(QWidget):
         self.pose3dsim_list.append(self.pose3dsim)
         self.pose3dReal=self.pose3dEstimated_client.getPose3d()
         self.pose3dreal_list.append(self.pose3dReal)
+        self.pose3dError = MainWindow.getError(self,poseReal=self.pose3dReal,poseEst=self.pose3dsim)
+        self.pose3dError_list.append(self.pose3dError)
 
+
+    def getError(self,poseReal,poseEst):
+        poseError = Pose3d()
+        poseError.x = abs(poseReal.x-poseEst.x)
+        poseError.y = abs(poseReal.y-poseEst.y)
+        poseError.z = abs(poseReal.z-poseEst.z)
+
+
+        poseError.yaw = abs(poseReal.yaw-poseEst.yaw)
+        poseError.roll = abs(poseReal.roll-poseEst.roll)
+        poseError.pitch = abs(poseReal.pitch-poseEst.pitch)
+        return poseError
 
 
 
