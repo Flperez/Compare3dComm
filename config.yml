@@ -1,0 +1,15 @@
+compare3d:
+
+  Pose3DReal:
+    Server: 1 # 0 -> Deactivate, 1 -> Ice , 2 -> ROS
+    Proxy: "Pose3D:default -h localhost -p 9001"
+    Topic: "//turtlebotROS/odom"
+    Name: comparePose3dReal
+
+  Pose3DEstimated:
+    Server: 1 # 0 -> Deactivate, 1 -> Ice , 2 -> ROS
+    Proxy: "Pose3D:default -h localhost -p 9001"
+    Topic: "/visual_markers/pose3d"
+    Name: comparePose3dEstimated
+  
+  NodeName: compare3d
