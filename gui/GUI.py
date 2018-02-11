@@ -141,7 +141,7 @@ class MainWindow(QWidget):
             
     def savingResult(self):
         self.textbox.setText("Saving result...")
-
+        # TODO:  guardar las listas y utilizar el codigo de plotdata para plotear todas las posibles graficas
 
         self.textbox.setText("Done!")
 
@@ -154,6 +154,7 @@ class MainWindow(QWidget):
 
 
     def updateGUI(self):
+        # TODO: hacer el append en widgetplot?
         self.pose3dsim=self.pose3dReal_client.getPose3d()
         self.pose3dsim_list.append(self.pose3dsim)
         self.pose3dReal=self.pose3dEstimated_client.getPose3d()

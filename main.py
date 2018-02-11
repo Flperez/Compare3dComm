@@ -32,4 +32,6 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
 
+    # TODO: crear archivo para plotear los resultados
+
 
