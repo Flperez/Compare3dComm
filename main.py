@@ -15,10 +15,11 @@ if __name__ == '__main__':
 
     # starting comm
     jdrc = comm.init(cfg, "compare3d")
-
+    x = jdrc.getConfig()
 
     pose_real = jdrc.getPose3dClient("compare3d.Pose3DReal")
     pose_sim = jdrc.getPose3dClient("compare3d.Pose3DEstimated")
+
 
     app = QApplication(sys.argv)
     frame = MainWindow(map="markers.txt")
@@ -32,6 +33,5 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
 
-    # TODO: crear archivo para plotear los resultados
 
 
