@@ -55,6 +55,17 @@ class MyDynamicMplCanvas(FigureCanvas):
             xmap = list(map(attrgetter('x'), self.map))
             ymap = list(map(attrgetter('y'), self.map))
 
+
+            #
+            # TODO: anote the number of markers
+            # https://stackoverflow.com/questions/22272081/label-python-data-points-on-plot4
+
+            # Todo: plot wall
+
+
+
+
+
             self.axes.plot(xEst, yEst, 'r', xReal, yReal, 'b',xmap,ymap,'*k')
             self.draw()
 
