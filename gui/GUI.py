@@ -13,12 +13,13 @@ from jderobotTypes.pose3d import Pose3d
 
 class MainWindow(QWidget):
     updGUI = pyqtSignal()
-    def __init__(self,map):
+    def __init__(self,map,path="result"):
 
         super(MainWindow, self).__init__()
         self.updGUI.connect(self.updateGUI)
         ### initialize
         self.filename = map
+        self.path_result = path
 
         self.loadpathXYZ()
 
@@ -141,8 +142,12 @@ class MainWindow(QWidget):
             
     def savingResult(self):
         self.textbox.setText("Saving result...")
-        # TODO:  guardar las listas y utilizar el codigo de plotdata para plotear todas las posibles graficas
+        if not os.path.exists(self.path_result):
+            os.mkdir(self.path_result)
 
+        np.save(os.path.join(self.path_result,"pose3dreal_list.npy"),self.pose3dreal_list)
+        np.save(os.path.join(self.path_result,"pose3dsim_list.npy"),self.pose3dreal_list)
+        np.save(os.path.join(self.path_result, "pose3dError_list.npy"), self.pose3dError_list)
         self.textbox.setText("Done!")
 
     def setPose3Dsim(self,pose):
@@ -154,7 +159,6 @@ class MainWindow(QWidget):
 
 
     def updateGUI(self):
-        # TODO: hacer el append en widgetplot?
         self.pose3dsim=self.pose3dReal_client.getPose3d()
         self.pose3dsim_list.append(self.pose3dsim)
         self.pose3dReal=self.pose3dEstimated_client.getPose3d()
