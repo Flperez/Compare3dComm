@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 
     app = QApplication(sys.argv)
-    frame = MainWindow(map="markers.txt")
+    frame = MainWindow()
     frame.setPose3Dsim(pose_sim)
     frame.setPose3dreal(pose_real)
     frame.show()

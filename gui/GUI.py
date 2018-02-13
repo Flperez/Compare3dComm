@@ -2,10 +2,7 @@ from PyQt5.QtWidgets import QWidget,QCheckBox,QPushButton,QLineEdit,QVBoxLayout
 from PyQt5.QtCore import Qt,pyqtSignal
 import jderobot
 import numpy as np
-import sys,os
-from OpenGL.GL import *
-from OpenGL.GLU import *
-import threading
+import os
 from widgetplot import MyDynamicMplCanvas
 from jderobotTypes.pose3d import Pose3d
 
@@ -13,7 +10,7 @@ from jderobotTypes.pose3d import Pose3d
 
 class MainWindow(QWidget):
     updGUI = pyqtSignal()
-    def __init__(self,map,path="result"):
+    def __init__(self,map="markers.txt",path="result"):
 
         super(MainWindow, self).__init__()
         self.updGUI.connect(self.updateGUI)
