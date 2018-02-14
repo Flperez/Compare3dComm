@@ -1,8 +1,6 @@
 import sys
-
 import comm
 import config
-
 import signal
 from PyQt5.QtWidgets import QApplication
 from gui.GUI import MainWindow
@@ -20,7 +18,6 @@ if __name__ == '__main__':
     pose_real = jdrc.getPose3dClient("compare3d.Pose3DReal")
     pose_sim = jdrc.getPose3dClient("compare3d.Pose3DEstimated")
 
-
     app = QApplication(sys.argv)
     frame = MainWindow()
     frame.setPose3Dsim(pose_sim)
@@ -32,6 +29,3 @@ if __name__ == '__main__':
     t2.start()
 
     sys.exit(app.exec_())
-
-
-

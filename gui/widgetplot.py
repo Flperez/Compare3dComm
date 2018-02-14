@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 
 
 class MyDynamicMplCanvas(FigureCanvas):
-    """A canvas that updates itself every second with a new plot."""
 
     def __init__(self, option,pose_error,pose_est,pose_real,map,parent=None, width=6, height=4, dpi=100):
 
@@ -56,17 +55,14 @@ class MyDynamicMplCanvas(FigureCanvas):
             ymap = list(map(attrgetter('y'), self.map))
 
 
-            #
-            # TODO: anote the number of markers
-            # https://stackoverflow.com/questions/22272081/label-python-data-points-on-plot4
-
-            # Todo: plot wall
-
-
-
+            i=0
+            for xy in zip(xmap, ymap):
+                self.axes.annotate('%s' % i, xy=xy, textcoords='data')
+                i+=1
 
 
             self.axes.plot(xEst, yEst, 'r', xReal, yReal, 'b',xmap,ymap,'*k')
+            self.axes.grid()
             self.draw()
 
 
@@ -91,6 +87,9 @@ class MyDynamicMplCanvas(FigureCanvas):
             self.axes.plot(t, PosRealP,'b', t, PosEstP,'r')
 
             self.draw()
+
+
+
         if self.option == "showErrorRPY":
             ### Angle RPY
             # self.axes.cla()
@@ -113,7 +112,6 @@ class MyDynamicMplCanvas(FigureCanvas):
 
         if self.option == "showErrorXYZ":
             ### Angle RPY
-            # self.axes.cla()
             self.fig.clf()
             self.axes = self.fig.add_subplot(311)
             ErrorX = list(map(attrgetter('x'), self.pose_error))
