@@ -5,20 +5,22 @@ import numpy as np
 import os
 from widgetplot import MyDynamicMplCanvas
 from jderobotTypes.pose3d import Pose3d
+from plotWall import loadWorld
 
 
 
 class MainWindow(QWidget):
     updGUI = pyqtSignal()
-    def __init__(self,map="markers.txt",path="result"):
+    def __init__(self,file_world,markers="markers.txt",path="result",):
 
         super(MainWindow, self).__init__()
         self.updGUI.connect(self.updateGUI)
         ### initialize
-        self.filename = map
+        self.filename = markers
         self.path_result = path
-
-        self.loadpathXYZ()
+        self.file_world = file_world
+        self.loadmarkers()
+        self.loadworld()
 
         self.pose3dsim_list = []
         self.pose3dreal_list = []
@@ -88,7 +90,7 @@ class MainWindow(QWidget):
         self.main_widget = QWidget(self)
         l = QVBoxLayout(self.main_widget)
         self.dc = MyDynamicMplCanvas(parent=self.main_widget, option=self.showNow,
-                                     map=self.map,
+                                     map=self.map,world=self.world,
                                      pose_est=self.pose3dsim_list,
                                      pose_real=self.pose3dreal_list,
                                      pose_error = self.pose3dError_list)
@@ -179,7 +181,7 @@ class MainWindow(QWidget):
 
 
 
-    def loadpathXYZ(self):
+    def loadmarkers(self):
         a=[]
 
         for line in open(self.filename, 'r').readlines():
@@ -187,12 +189,18 @@ class MainWindow(QWidget):
             linelist = line.split()
             if len(linelist)>1:
                 pose = jderobot.Pose3DData()
-                pose.x = float(linelist[0])
-                pose.y = float(linelist[1])
-                pose.z = float(linelist[2])
+                pose.x = float(linelist[1])
+                pose.y = float(linelist[2])
+                pose.z = float(linelist[3])
                 a.append(pose)
 
         self.map = list(a)
+
+    def loadworld(self):
+        if self.file_world:
+            self.world = loadWorld(path=self.file_world)
+        else:
+            self.world = None
 
 
 

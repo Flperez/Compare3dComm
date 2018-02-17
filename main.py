@@ -10,6 +10,11 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == '__main__':
     cfg = config.load(sys.argv[1])
+    if len(sys.argv)>2:
+        file_world = sys.argv[2]
+    else:
+        file_world = None
+
 
     # starting comm
     jdrc = comm.init(cfg, "compare3d")
@@ -19,7 +24,7 @@ if __name__ == '__main__':
     pose_sim = jdrc.getPose3dClient("compare3d.Pose3DEstimated")
 
     app = QApplication(sys.argv)
-    frame = MainWindow()
+    frame = MainWindow(file_world=file_world)
     frame.setPose3Dsim(pose_sim)
     frame.setPose3dreal(pose_real)
     frame.show()

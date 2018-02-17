@@ -4,17 +4,14 @@ from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtCore import QTimer
 from operator import attrgetter
 import numpy as np
-import matplotlib.pyplot as plt
-
-
 
 
 class MyDynamicMplCanvas(FigureCanvas):
 
-    def __init__(self, option,pose_error,pose_est,pose_real,map,parent=None, width=6, height=4, dpi=100):
+    def __init__(self, option,pose_error,pose_est,pose_real,map,world,parent=None, width=6, height=4, dpi=100):
 
-        #MyMplCanvas
         self.fig = Figure(figsize=(width, height), dpi=dpi)
+
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -22,6 +19,7 @@ class MyDynamicMplCanvas(FigureCanvas):
 
 
         self.map = map
+        self.world = world
         self.poseEst = pose_est
         self.poseReal = pose_real
         self.option = option
@@ -55,20 +53,25 @@ class MyDynamicMplCanvas(FigureCanvas):
             ymap = list(map(attrgetter('y'), self.map))
 
 
+            if self.world:
+                for x,y in self.world:
+                    self.axes.plot(x, y, 'k')
+
+
             i=0
             for xy in zip(xmap, ymap):
                 self.axes.annotate('%s' % i, xy=xy, textcoords='data')
                 i+=1
 
 
-            self.axes.plot(xEst, yEst, 'r', xReal, yReal, 'b',xmap,ymap,'*k')
+            self.axes.plot(xEst, yEst,'r',
+                           xReal, yReal, 'b',xmap,ymap,'*k')
             self.axes.grid()
             self.draw()
 
 
         if self.option == "showRPY":
             ### Angle RPY
-            #self.axes.cla()
             self.fig.clf()
             self.axes = self.fig.add_subplot(311)
             PosRealR = list(map(attrgetter('roll'), self.poseReal))
@@ -92,7 +95,6 @@ class MyDynamicMplCanvas(FigureCanvas):
 
         if self.option == "showErrorRPY":
             ### Angle RPY
-            # self.axes.cla()
             self.fig.clf()
             self.axes = self.fig.add_subplot(311)
             ErrorR = list(map(attrgetter('roll'), self.pose_error))
@@ -127,9 +129,6 @@ class MyDynamicMplCanvas(FigureCanvas):
 
             self.axes.plot(t, ErrorZ)
             self.draw()
-
-
-
 
 
     def setOption(self,option):
